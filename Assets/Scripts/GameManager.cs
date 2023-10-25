@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -10,7 +11,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         if (instance != null && instance != this)
-            Destroy(this);
+            Destroy(gameObject);
         else
         {
             instance = this;
@@ -24,16 +25,9 @@ public class GameManager : MonoBehaviour
 
     // gameManager part
     private Player player;
-    [SerializeField] private GameObject spawnPoint;
+    private GameObject spawnPoint;
     [SerializeField] private GameObject playerPrefab;
     [SerializeField] private bool gameActive = false;
-
-    private void Update()
-    {
-        if (!gameActive && Input.GetKeyDown(KeyCode.Space)) {
-            StartNewGame();
-        }
-    }
 
     private void InstantiatePlayer()
     {
@@ -42,18 +36,16 @@ public class GameManager : MonoBehaviour
         FindObjectOfType<CameraFollower>().FocusOn(player);
     }
 
-    public void StartNewGame()
+    public void StartLevel(GameObject spawnPoint)
     {
-        if (spawnPoint == null)
-        {
-            Debug.Log("GameManager has no spawn point");
-        } else
-        {
-            InstantiatePlayer();
+        this.spawnPoint = spawnPoint;
+        InstantiatePlayer();
 
+        if (!gameActive)
+        {
             ScoreManager.instance.StartNewGame();
             gameActive = true;
-        }
+        }  
     }
 
     public void RespawnIfPossible()
@@ -61,6 +53,26 @@ public class GameManager : MonoBehaviour
         if (ScoreManager.instance.Lives > 0)
         {
             InstantiatePlayer();
+        } else
+        {
+            // game over
+            gameActive = false;
+            ToScoreScene();
         }
+    }
+
+    public void ToGameScene()
+    {
+        SceneManager.LoadScene("GameScene");
+    }
+
+    public void ToStartScene()
+    {
+        SceneManager.LoadScene("StartScene");
+    }
+
+    public void ToScoreScene()
+    {
+        SceneManager.LoadScene("ScoreScene");
     }
 }
